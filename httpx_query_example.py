@@ -1,0 +1,77 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "httpx",
+# ]
+# ///
+
+import asyncio
+import time
+from datetime import datetime, timedelta, UTC
+
+import httpx
+
+BASE_URL = "https://www.nemweb.com.au/REPORTS/ARCHIVE/Dispatch_SCADA"
+FILENAME_TEMPLATE = "PUBLIC_DISPATCHSCADA_{date:%Y%m%d}.zip"
+
+def get_safe_recent_dates(n: int = 10, offset_days: int = 3) -> list[str]:
+    """Generate list of `n` dates starting from `offset_days` ago, in YYYYMMDD format."""
+    start_date = datetime.now(tz=UTC) - timedelta(days=offset_days)
+    return [
+        (start_date - timedelta(days=i))
+        for i in range(n)
+    ]
+
+def build_urls(dates: list[str]) -> list[str]:
+    return [f"{BASE_URL}/{FILENAME_TEMPLATE.format(date=d)}" for d in dates]
+
+def download_sync(urls: list[str]) -> list[bytes]:
+    contents = []
+    with httpx.Client() as client:
+        for url in urls:
+            response = client.get(url)
+            response.raise_for_status()
+            contents.append(response.content)
+    return contents
+
+async def download_one_async(client: httpx.AsyncClient, url: str) -> bytes:
+    response = await client.get(url)
+    response.raise_for_status()
+    return response.content
+
+async def download_async(urls: list[str]) -> list[bytes]:
+    # This limits stops the AEMO web server from blocking us due to too many requests
+    limits = httpx.Limits(max_connections=6)
+    async with httpx.AsyncClient(limits=limits) as client:
+        return await asyncio.gather(*[download_one_async(client, url) for url in urls])
+
+async def main():
+    dates = get_safe_recent_dates(n=20, offset_days=3)
+    urls = build_urls(dates)
+
+    print("▶ Downloading synchronously...")
+    start_sync = time.perf_counter()
+    sync_contents = download_sync(urls)
+    end_sync = time.perf_counter()
+    sync_duration = end_sync - start_sync
+
+    print("▶ Downloading asynchronously...")
+    start_async = time.perf_counter()
+    async_contents = await download_async(urls)
+    end_async = time.perf_counter()
+    async_duration = end_async - start_async
+
+    print("\n📊 Results:")
+    print(f"  Sync duration:  {sync_duration:.2f} seconds")
+    print(f"  Async duration: {async_duration:.2f} seconds")
+
+    assert len(sync_contents) == len(async_contents), "Mismatch in number of files downloaded"
+    print("✅ All files downloaded successfully.")
+
+    if async_duration < sync_duration:
+        print("🚀 Async download was faster!")
+    else:
+        print("⚠️ Async was not faster (may be due to network conditions or small file sizes)")
+
+if __name__ == "__main__":
+    asyncio.run(main())
