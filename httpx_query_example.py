@@ -13,6 +13,7 @@ import httpx
 
 BASE_URL = "https://www.nemweb.com.au/REPORTS/ARCHIVE/Dispatch_SCADA"
 FILENAME_TEMPLATE = "PUBLIC_DISPATCHSCADA_{date:%Y%m%d}.zip"
+MAX_CONNECTIONS = 6
 
 def get_safe_recent_dates(n: int = 10, offset_days: int = 3) -> list[str]:
     """Generate list of `n` dates starting from `offset_days` ago, in YYYYMMDD format."""
@@ -41,21 +42,22 @@ async def download_one_async(client: httpx.AsyncClient, url: str) -> bytes:
 
 async def download_async(urls: list[str]) -> list[bytes]:
     # This limits stops the AEMO web server from blocking us due to too many requests
-    limits = httpx.Limits(max_connections=6)
+    limits = httpx.Limits(max_connections=MAX_CONNECTIONS)
     async with httpx.AsyncClient(limits=limits) as client:
         return await asyncio.gather(*[download_one_async(client, url) for url in urls])
 
 async def main():
-    dates = get_safe_recent_dates(n=20, offset_days=3)
+    file_count = 20
+    dates = get_safe_recent_dates(n=file_count, offset_days=3)
     urls = build_urls(dates)
 
-    print("▶ Downloading synchronously...")
+    print(f"▶ Downloading {file_count} files synchronously...")
     start_sync = time.perf_counter()
     sync_contents = download_sync(urls)
     end_sync = time.perf_counter()
     sync_duration = end_sync - start_sync
 
-    print("▶ Downloading asynchronously...")
+    print("▶ Downloading {file_count} files asynchronously...")
     start_async = time.perf_counter()
     async_contents = await download_async(urls)
     end_async = time.perf_counter()

@@ -25,9 +25,12 @@ async def main():
     # Create temporary files
     temp_dir = tempfile.TemporaryDirectory()
     file_paths = []
-    content = "Hello, asyncio!\n" * 1000
+    file_count = 10
+    file_size = 100_000
+    
+    content = "5" * file_size
 
-    for i in range(10):
+    for i in range(file_count):
         file_path = Path(temp_dir.name) / f"file_{i}.txt"
         file_path.write_text(content)
         file_paths.append(file_path)
@@ -44,6 +47,7 @@ async def main():
     end_async = time.perf_counter()
     async_duration = end_async - start_async
 
+    print(f"Reading {file_count} files of size {file_size} bytes")
     print(f"Sync duration:   {sync_duration:.6f} seconds")
     print(f"Async duration:  {async_duration:.6f} seconds")
 
