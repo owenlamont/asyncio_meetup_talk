@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.13"
 # dependencies = [
-#     "aiofiles",
+#     "anyio",
 # ]
 # ///
 
@@ -9,15 +9,14 @@ import asyncio
 import time
 import tempfile
 from pathlib import Path
-import aiofiles
+from anyio import Path as APath
 
 
-async def read_file_async(path):
-    async with aiofiles.open(path, mode='r') as f:
-        return await f.read()
+async def read_file_async(path: APath) -> str:
+    return await path.read_text()
 
 
-def read_file_sync(path):
+def read_file_sync(path: Path) -> str:
     return path.read_text()
 
 
@@ -43,7 +42,7 @@ async def main():
 
     # Asynchronous read with aiofiles
     start_async = time.perf_counter()
-    async_contents = await asyncio.gather(*(read_file_async(p) for p in file_paths))
+    async_contents = await asyncio.gather(*(read_file_async(APath(p)) for p in file_paths))
     end_async = time.perf_counter()
     async_duration = end_async - start_async
 
