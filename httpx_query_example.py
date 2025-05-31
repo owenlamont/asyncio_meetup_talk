@@ -57,7 +57,7 @@ async def main():
     end_sync = time.perf_counter()
     sync_duration = end_sync - start_sync
 
-    print("▶ Downloading {file_count} files asynchronously...")
+    print(f"▶ Downloading {file_count} files asynchronously...")
     start_async = time.perf_counter()
     async_contents = await download_async(urls)
     end_async = time.perf_counter()
@@ -67,7 +67,7 @@ async def main():
     print(f"  Sync duration:  {sync_duration:.2f} seconds")
     print(f"  Async duration: {async_duration:.2f} seconds")
 
-    assert len(sync_contents) == len(async_contents), "Mismatch in number of files downloaded"
+    assert sync_contents == async_contents, "Mismatch in file contents downloaded"
     print("✅ All files downloaded successfully.")
 
     if async_duration < sync_duration:
