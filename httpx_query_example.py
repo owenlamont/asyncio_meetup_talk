@@ -6,25 +6,26 @@
 # ///
 
 import asyncio
-import time
 from datetime import datetime, timedelta, UTC
+import time
 
 import httpx
+
 
 BASE_URL = "https://www.nemweb.com.au/REPORTS/ARCHIVE/Dispatch_SCADA"
 FILENAME_TEMPLATE = "PUBLIC_DISPATCHSCADA_{date:%Y%m%d}.zip"
 MAX_CONNECTIONS = 6
 
-def get_safe_recent_dates(n: int = 10, offset_days: int = 3) -> list[str]:
+
+def get_safe_recent_dates(n: int = 10, offset_days: int = 3) -> list[datetime]:
     """Generate list of `n` dates starting from `offset_days` ago, in YYYYMMDD format."""
     start_date = datetime.now(tz=UTC) - timedelta(days=offset_days)
-    return [
-        (start_date - timedelta(days=i))
-        for i in range(n)
-    ]
+    return [(start_date - timedelta(days=i)) for i in range(n)]
+
 
 def build_urls(dates: list[str]) -> list[str]:
     return [f"{BASE_URL}/{FILENAME_TEMPLATE.format(date=d)}" for d in dates]
+
 
 def download_sync(urls: list[str]) -> list[bytes]:
     contents = []
@@ -35,16 +36,19 @@ def download_sync(urls: list[str]) -> list[bytes]:
             contents.append(response.content)
     return contents
 
+
 async def download_one_async(client: httpx.AsyncClient, url: str) -> bytes:
     response = await client.get(url)
     response.raise_for_status()
     return response.content
+
 
 async def download_async(urls: list[str]) -> list[bytes]:
     # This limits stops the AEMO web server from blocking us due to too many requests
     limits = httpx.Limits(max_connections=MAX_CONNECTIONS)
     async with httpx.AsyncClient(limits=limits) as client:
         return await asyncio.gather(*[download_one_async(client, url) for url in urls])
+
 
 async def main():
     file_count = 20
@@ -74,6 +78,7 @@ async def main():
         print("🚀 Async download was faster!")
     else:
         print("⚠️ Async was not faster (may be due to network conditions or small file sizes)")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
