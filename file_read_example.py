@@ -6,9 +6,10 @@
 # ///
 
 import asyncio
-import time
-import tempfile
 from pathlib import Path
+import tempfile
+import time
+
 from anyio import Path as APath
 
 
@@ -26,7 +27,7 @@ async def main():
     file_paths = []
     file_count = 10
     file_size = 100_000
-    
+
     content = "5" * file_size
 
     for i in range(file_count):
