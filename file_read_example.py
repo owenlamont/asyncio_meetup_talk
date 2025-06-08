@@ -41,7 +41,7 @@ async def main():
     end_sync = time.perf_counter()
     sync_duration = end_sync - start_sync
 
-    # Asynchronous read with aiofiles
+    # Asynchronous read
     start_async = time.perf_counter()
     async_contents = await asyncio.gather(*(read_file_async(APath(p)) for p in file_paths))
     end_async = time.perf_counter()
