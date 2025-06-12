@@ -23,8 +23,8 @@ def get_safe_recent_dates(n: int = 10, offset_days: int = 3) -> list[datetime]:
     return [(start_date - timedelta(days=i)) for i in range(n)]
 
 
-def build_urls(dates: list[str]) -> list[str]:
-    return [f"{BASE_URL}/{FILENAME_TEMPLATE.format(date=d)}" for d in dates]
+def build_urls(dates: list[datetime]) -> list[str]:
+    return [f"{BASE_URL}/PUBLIC_DISPATCHSCADA_{d:%Y%m%d}.zip" for d in dates]
 
 
 def download_sync(urls: list[str]) -> list[bytes]:
