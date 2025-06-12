@@ -1,5 +1,12 @@
 # Asynchronous Programming with Python code examples
 
+## Presentation Slides
+
+You can find the slide materials below:
+
+* [Google sheets slides](https://docs.google.com/presentation/d/1m6Hznp17GQsVnrGIt7OcbewADWIQqrjvOBab86CrZoA/edit?usp=sharing)
+* [PDF slides](./Asynchronous_Python.pdf)
+
 ## Running the examples
 
 The easiest way to open and run the async_example.ipynb notebook is by uploading it into
