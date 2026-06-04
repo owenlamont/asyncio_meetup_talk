@@ -24,6 +24,9 @@ skip-magic-trailing-comma = true
 line-ending = "lf"
 
 [tool.ruff.lint]
+# The animation scripts use × as a genuine multiplication sign (rendered into the
+# GIFs and used in explanatory comments), so allow that one confusable.
+allowed-confusables = ["×"]
 # See https://docs.astral.sh/ruff/rules/
 select = [
     "A",
