@@ -470,8 +470,10 @@ def encode_gif(frame_dir: str, out: str):
             "-i",
             os.path.join(frame_dir, "%05d.png"),
             "-vf",
-            "fps=15,scale=800:-1:flags=lanczos,split[s0][s1];"
-            "[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer",
+            (
+                "fps=15,scale=800:-1:flags=lanczos,split[s0][s1];"
+                "[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer"
+            ),
             out,
         ],
         check=True,
